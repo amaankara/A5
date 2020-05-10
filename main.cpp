@@ -14,6 +14,36 @@ CPSC 350-01
 BST<Student> studentTree;
 BST<Faculty> facultyTree;
 
+void printStudentTree(TreeNode<Student> *sNode){
+  if(sNode!=NULL){
+    if(sNode->left!=NULL){
+      printStudentTree(sNode->left);
+    }
+    sNode->value->printStudentInfo();
+    if(sNode->right!= NULL){
+      printStudentTree(sNode->right);
+    }
+  }
+  else{
+    cout<<"Student DataBase is empty "<<endl;
+  }
+}
+
+void printFacultyTree(TreeNode<Faculty> *fNode){
+  if(fNode!=NULL){
+    if(fNode->left!=NULL){
+      printFacultyTree(fNode->left);
+    }
+    fNode->value->printFaculty();
+    if(fNode->right!= NULL){
+      printFacultyTree(fNode->right);
+    }
+  }
+  else{
+    cout<<"Faculty Database is empty "<<endl;
+  }
+}
+
 void findStudent(){
   int id;
   cout<<"enter the student id " << endl;
@@ -236,15 +266,25 @@ void printMenu(){
 
     cin>>input;
 
-    if(input>0&& input<15){
+    if(input<0&& input>15){
       cout<<"Invaild option selected " << endl;
     }
     else{
       if(input==1){
-        //printStudent();
+        if(studentTree.isEmpty()){
+          cout<<"Student DataBase is empty "<<endl;
+        }
+        else{
+          printStudentTree(studentTree.root);
+        }
       }
       else if(input==2){
-        //printFaculty();
+        if(facultyTree.isEmpty()){
+          cout<<"Faculty Database is empty "<<endl;
+        }
+        else{
+          printFacultyTree(facultyTree.root);
+        }
       }
       else if(input==3){
         findStudent();
@@ -281,6 +321,7 @@ void printMenu(){
       }
       else if(input==14){
         exit = true;
+        //writeToFile();
       }
     }
 
@@ -288,5 +329,6 @@ void printMenu(){
 }
 
 int main(int argc,char** argv){
+  //importFile();
   printMenu();
 }
