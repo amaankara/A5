@@ -4,15 +4,165 @@ Amaan Karachiwala
 Karachiwala@chapman.edu
 CPSC 350-01
 */
-
+#include <iostream>
+#include <fstream>
 #include "TreeNode.h"
 #include "Faculty.h"
 #include "Student.h"
 //#include "Menu.h"
 #include "GenStack.h"
+using namespace std;
 
 BST<Student> studentTree;
 BST<Faculty> facultyTree;
+int studentCount;
+int facultyCount;
+
+void importFile(){
+
+  string line ="";
+  int count = 1;
+  //Faculty import
+  int facultyImported=0;
+  int fID;
+  string fName;
+  string fLevel;
+  string fDep;
+  int numAdvisee;
+
+  //Student import;
+  int studentImported = 0;
+  int sID;
+  string sName;
+  string sYear;
+  string sMajor;
+  double sGPA;
+  int sAdvisorID;
+
+  ifstream myFacultyFile;
+  myFacultyFile.open("FacultyData.txt");
+  getline(myFacultyFile,line);
+  if(line==""){
+    cout<<"DataBase is empty " <<endl;
+  }
+  else{
+    facultyCount=stoi(line);
+  }
+
+  while(getline(myFacultyFile,line)){
+    switch(count){
+      case 1: {
+        if(line=="-x-"){
+        }
+        else{
+          cout<<"Incorrect file format " <<endl;
+        }
+        break;
+      }
+      case 2: {
+        fID = stoi(line);
+        break;
+      }
+      case 3: {
+        fName = line;
+        break;
+      }
+      case 4: {
+        fLevel = line;
+        break;
+      }
+      case 5: {
+        fDep=line;
+        break;
+      }
+      case 6: {
+        int adviseeNo = stoi(line);
+        Faculty* f = new Faculty(fID, fName, fLevel, fDep);
+        facultyImported++;
+        while(adviseeNo!=0){
+          getline(myFacultyFile,line);
+          f->addAdvisee(stoi(line));
+          --adviseeNo;
+        }
+        TreeNode<Faculty> *fNode = new TreeNode<Faculty>(fID,f);
+        facultyTree.insert(fNode);
+        break;
+      }
+      default :{
+        break;
+      }
+    }
+    count++;
+    if(count>6){
+      count = 1;
+    }
+    if(facultyCount==facultyImported){
+      break;
+    }
+  }
+  myFacultyFile.close();
+
+  ifstream myStudentFile;
+  myStudentFile.open("StudentData.txt");
+  getline(myStudentFile,line);
+  if(line==""){
+    cout<<"DataBase is empty "<<endl;
+  }
+  else{
+    studentCount=stoi(line);
+  }
+  while(getline(myStudentFile,line)){
+    switch(count){
+      case 1: {
+        if(line=="-x-"){
+        }
+        else{
+          cout<<"Incorrect file format "<<endl;
+        }
+        break;
+      }
+      case 2: {
+        sID = stoi(line);
+        break;
+      }
+      case 3: {
+        sName = line;
+        break;
+      }
+      case 4: {
+        sYear = line;
+        break;
+      }
+      case 5: {
+        sMajor = line;
+        break;
+      }
+      case 6: {
+        sGPA = stoi(line);
+        break;
+      }
+      case 7: {
+        sAdvisorID = stoi(line);
+        Student *s = new Student(sID,sName,sYear,sMajor,sGPA,sAdvisorID);
+        TreeNode<Student> *sNode = new TreeNode<Student>(sID,s);
+        studentTree.insert(sNode);
+        studentImported++;
+        break;
+      }
+      default : {
+        break;
+      }
+    }
+    count++;
+    if(count>7){
+      count=1;
+    }
+    if(studentCount==studentImported){
+      break;
+    }
+  }
+  myStudentFile.close();
+}
 
 void printStudentTree(TreeNode<Student> *sNode){
   if(sNode!=NULL){
@@ -135,6 +285,7 @@ void addStudent(){
   Student *s=new Student(id,name,year,major,gpa,advisorID);
   TreeNode<Student> *sNode = new TreeNode<Student>(id,s);
   studentTree.insert(sNode);
+  studentCount++;
 }
 
 void deleteStudent(){
@@ -174,6 +325,7 @@ void addFaculty(){
 
   TreeNode<Faculty> *fNode= new TreeNode<Faculty>(id,f);
   facultyTree.insert(fNode);
+  facultyCount++;
 }
 
 void deleteFaculty(){
@@ -243,6 +395,80 @@ void removeAdvisee(){
   }
 }
 
+void writeStudent(TreeNode<Student> *sNode){
+  ofstream myStudentFile;
+  myStudentFile.open("StudentData.txt");
+
+  if(sNode!=NULL){
+    myStudentFile<<"-x-"<<endl;
+    myStudentFile<< sNode->value->studentID <<endl;
+    myStudentFile<< sNode->value->studentName <<endl;
+    myStudentFile<< sNode->value->studentYear <<endl;
+    myStudentFile<< sNode->value->major <<endl;
+    myStudentFile<< sNode->value->gpa <<endl;
+    myStudentFile<< sNode->value->advisorID <<endl;
+
+    if(sNode->left!=NULL){
+      writeStudent(sNode->left);
+    }
+    if(sNode->right!=NULL){
+      writeStudent(sNode->right);
+    }
+  }
+  else{
+    cout <<"Student DataBase is empty "<<endl;
+  }
+
+  myStudentFile.close();
+}
+
+void writeFaculty(TreeNode<Faculty> *fNode){
+  ofstream myFacultyFile;
+  myFacultyFile.open("FacultyData.txt");
+
+  if(fNode!=NULL){
+    myFacultyFile<<"-x-"<<endl;
+    myFacultyFile<< fNode->value->facultyID <<endl;
+    myFacultyFile<< fNode->value->facultyName <<endl;
+    myFacultyFile<< fNode->value->facultyLevel <<endl;
+    myFacultyFile<< fNode->value->facultyDepartment<<endl;
+
+    for(int i=0;i<fNode->value->adviseeNo;++i){
+      if(fNode->value->adviseeList[i]!=-1){
+        myFacultyFile<< fNode->value->adviseeList[i] <<endl;
+      }
+    }
+
+    if(fNode->left != NULL){
+      writeFaculty(fNode->left);
+    }
+    if(fNode->right!=NULL){
+      writeFaculty(fNode->right);
+    }
+  }
+  else{
+    cout<<"DataBase is empty "<<endl;
+  }
+  myFacultyFile.close();
+}
+
+void writeToFile(){
+  ofstream myStudentFile;
+  ofstream myFacultyFile;
+
+  myStudentFile.open("StudentData.txt");
+  myStudentFile<< studentCount <<endl;
+  TreeNode<Student> *currStudent = studentTree.root;
+  writeStudent(currStudent);
+  myStudentFile.close();
+
+  myFacultyFile.open("FacultyData.txt");
+  myFacultyFile<< facultyCount << endl;
+  TreeNode<Faculty> *currFaculty = facultyTree.root;
+  writeFaculty(currFaculty);
+  myFacultyFile.close();
+}
+
 void printMenu(){
   int input;
   bool exit = false;
@@ -261,7 +487,7 @@ void printMenu(){
     cout<< "10 - Delete faculty with given ID " << endl;
     cout<< "11 - Change student advisor, student ID and new advisor ID needed " << endl;
     cout<< "12 - Remove advisee from faculty memeber's list, given the IDs " << endl;
-    cout<< "13 - rollback " << endl;
+    cout<< "13 - rollback (only for option 7,8,9 and 10)" << endl;
     cout<< "14 - exit " << endl;
 
     cin>>input;
@@ -321,7 +547,7 @@ void printMenu(){
       }
       else if(input==14){
         exit = true;
-        //writeToFile();
+        writeToFile();
       }
     }
 
@@ -329,6 +555,9 @@ void printMenu(){
 }
 
 int main(int argc,char** argv){
-  //importFile();
+  studentCount=0;
+  facultyCount = 0;
+  importFile();
   printMenu();
+  return 0;
 }
